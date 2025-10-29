@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Soal Google Form</title>
+    <!-- Muat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Konfigurasi Tailwind untuk font Inter -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .container-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="min-h-screen p-4 sm:p-8 flex justify-center items-start">
+        <div class="w-full max-w-4xl bg-white p-6 sm:p-10 rounded-xl container-shadow mt-10">
+
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Generator Soal Pilihan Ganda Otomatis</h1>
+            <!-- Keterangan Modifikasi BARU -->
+            <p class="text-sm text-gray-500 mb-4 border-b pb-2">Modifikasi oleh Rachmad Effendi TS, M.Pd (Duta Teknologi Kemendikdasmen - SMK Negeri 2 Trenggalek)</p>
+            <p class="text-gray-600 mb-8">Masukkan materi pokok dan tujuan pembelajaran untuk menghasilkan draf soal pilihan ganda yang siap diimpor/disalin ke Google Formulir.</p>
+
+            <!-- Bagian Input -->
+            <div class="space-y-6 mb-8">
+                <div>
+                    <label for="materiPokok" class="block text-sm font-medium text-gray-700 mb-1">Materi Pokok (Contoh: Sistem Pencernaan Manusia)</label>
+                    <input type="text" id="materiPokok" placeholder="Contoh: Perang Dingin (1947-1991)"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                </div>
+
+                <div>
+                    <label for="tujuanPembelajaran" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pembelajaran (Contoh: Peserta didik mampu menjelaskan proses absorpsi nutrisi di usus halus)</label>
+                    <textarea id="tujuanPembelajaran" rows="3" placeholder="Contoh: Menganalisis peran Amerika Serikat dan Uni Soviet dalam memicu Perang Dingin"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"></textarea>
+                </div>
+
+                <!-- NEW: Grid untuk Jumlah Soal, Jumlah Opsi, dan Tombol -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
+                    
+                    <!-- Jumlah Soal -->
+                    <div>
+                        <label for="jumlahSoal" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Soal yang Dibuat (1-100)</label>
+                        <input type="number" id="jumlahSoal" value="5" min="1" max="100"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                    </div>
+
+                    <!-- Jumlah Opsi Pilihan Ganda BARU -->
+                    <div>
+                        <label for="jumlahOpsi" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pilihan Ganda (Opsi)</label>
+                        <select id="jumlahOpsi"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                            <option value="4">4 Opsi (A, B, C, D)</option>
+                            <option value="5">5 Opsi (A, B, C, D, E)</option>
+                        </select>
+                    </div>
+
+                    <!-- Button -->
+                    <button id="generateButton" 
+                        class="w-full px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 active:bg-blue-800 disabled:bg-blue-300 md:mt-0 mt-2">
+                        Generate Draft Soal
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bagian Loading -->
+            <div id="loading" class="hidden text-center p-8 bg-blue-50 rounded-lg border border-blue-200">
+                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-blue-700 font-medium">Gemini sedang merancang soal-soal Anda. Mohon tunggu sebentar...</p>
+            </div>
+
+            <!-- Bagian Hasil -->
+            <div id="results" class="hidden mt-10">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Hasil Draft Soal (Pilihan Ganda)</h2>
+
+                <!-- Tampilan Soal yang Rapi -->
+                <div id="questionDisplay" class="space-y-8 p-6 bg-gray-50 rounded-xl border border-gray-200 mb-8">
+                    <!-- Soal akan di-render di sini -->
+                </div>
+
+                <!-- Bagian Google Form Ready Output -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Output Siap Konversi ke Google Form (JSON)</h3>
+                    <div class="relative">
+                        <textarea id="jsonOutput" rows="15" readonly
+                            class="w-full p-4 border border-green-400 bg-green-50 text-green-800 font-mono text-sm rounded-lg resize-none"></textarea>
+                        <button onclick="copyToClipboard('jsonOutput', this)"
+                            class="absolute top-2 right-2 px-3 py-1 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 transition">
+                            Salin JSON
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Anda dapat menyalin teks JSON ini untuk diproses lebih lanjut menggunakan alat konversi Google Form.</p>
+                </div>
+
+            </div>
+
+            <!-- Bagian Pesan Kesalahan -->
+            <div id="error-message" class="hidden mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
+                <p class="font-bold">Terjadi Kesalahan</p>
+                <p id="error-text"></p>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        // Global variables for the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const apiKey = ""; // API Key will be injected by the environment
+
+        const generateButton = document.getElementById('generateButton');
+        const loadingDiv = document.getElementById('loading');
+        const resultsDiv = document.getElementById('results');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const questionDisplay = document.getElementById('questionDisplay');
+        const errorMessageDiv = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+
+        // Fungsi untuk menyalin teks ke clipboard
+        window.copyToClipboard = (elementId, button) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                try {
+                    // Use modern API if available
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(element.value);
+                    } else {
+                        // Fallback for non-secure contexts (like iFrame)
+                        element.select();
+                        document.execCommand('copy');
+                    }
+                    button.textContent = 'Tersalin!';
+                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    button.classList.add('bg-gray-500');
+                    setTimeout(() => {
+                        button.textContent = 'Salin JSON';
+                        button.classList.add('bg-green-600', 'hover:bg-green-700');
+                        button.classList.remove('bg-gray-500');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Gagal menyalin:', err);
+                    // Use custom modal or message box instead of alert()
+                    // Placeholder for custom message box logic:
+                    console.warn('Gagal menyalin. Silakan salin manual.');
+                }
+            }
+        };
+
+        function showLoading(show) {
+            loadingDiv.classList.toggle('hidden', !show);
+            generateButton.disabled = show;
+            generateButton.textContent = show ? 'Memproses...' : 'Generate Draft Soal';
+            resultsDiv.classList.add('hidden');
+            errorMessageDiv.classList.add('hidden');
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessageDiv.classList.remove('hidden');
+            console.error("Error:", message);
+        }
+
+        function renderQuestions(quizData) {
+            questionDisplay.innerHTML = '';
+            let html = '';
+
+            quizData.forEach((q, index) => {
+                const questionNumber = index + 1;
+                // Pastikan kunci jawaban sama persis dengan salah satu opsi
+                html += `
+                    <div class="border-l-4 border-blue-500 pl-4 py-2 bg-white rounded-md shadow-sm">
+                        <p class="text-lg font-semibold text-gray-700 mb-3">Soal ${questionNumber}: ${q.question}</p>
+                        <div class="space-y-2 ml-4">
+                            ${q.options.map(option => `
+                                <p class="text-gray-600 ${option === q.correct_answer ? 'font-bold text-green-600 bg-green-50 p-1 rounded-sm' : ''}">
+                                    ${option}
+                                </p>
+                            `).join('')}
+                        </div>
+                        <p class="mt-3 text-md font-bold text-blue-600">
+                            Kunci Jawaban: ${q.correct_answer}
+                        </p>
+                    </div>
+                `;
+            });
+
+            questionDisplay.innerHTML = html;
+        }
+
+        async function generateQuiz() {
+            // Log untuk konfirmasi bahwa fungsi telah dipanggil
+            console.log("--- Memulai proses Generate Draft Soal ---");
+
+            const topic = document.getElementById('materiPokok').value.trim();
+            const objective = document.getElementById('tujuanPembelajaran').value.trim();
+            const numQuestions = parseInt(document.getElementById('jumlahSoal').value, 10);
+            const numOptions = parseInt(document.getElementById('jumlahOpsi').value, 10); // Ambil jumlah opsi
+
+            if (!topic || !objective) {
+                showError("Materi Pokok dan Tujuan Pembelajaran harus diisi. Mohon lengkapi kedua kolom tersebut.");
+                return;
+            }
+
+            if (numQuestions < 1 || numQuestions > 100) {
+                 showError("Jumlah soal harus antara 1 sampai 100.");
+                return;
+            }
+
+            showLoading(true);
+
+            // Tentukan huruf opsi yang akan digunakan (A, B, C, D atau A, B, C, D, E)
+            const optionLetters = numOptions === 5 ? '(A, B, C, D, E)' : '(A, B, C, D)';
+
+            const systemPrompt = `Anda adalah seorang ahli pendidikan dan perancang instruksional yang cermat. Tugas Anda adalah membuat ${numQuestions} soal pilihan ganda (Multiple Choice) berkualitas tinggi dengan ${numOptions} opsi jawaban ${optionLetters} per soal, berdasarkan materi dan tujuan yang diberikan. Pertanyaan-pertanyaan tersebut harus secara langsung menguji pencapaian tujuan pembelajaran. Format output Anda harus berupa JSON yang ketat sesuai skema.`;
+
+            const userQuery = `Buatkan ${numQuestions} soal pilihan ganda dengan ${numOptions} opsi jawaban ${optionLetters} berdasarkan Materi Pokok: '${topic}' dan Tujuan Pembelajaran: '${objective}'. Sertakan semua opsi jawaban dan kunci jawabannya.`;
+
+            const responseSchema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        "question": { "type": "STRING", "description": "Teks lengkap soal." },
+                        "options": {
+                            "type": "ARRAY",
+                            "items": { "type": "STRING", "description": "Opsi jawaban lengkap (e.g., 'A. Opsi pertama')." }
+                        },
+                        "correct_answer": { "type": "STRING", "description": "Opsi jawaban yang benar (e.g., 'A. Opsi pertama' atau 'B. Opsi kedua'). Harus sama persis dengan salah satu opsi di 'options'." }
+                    },
+                    "propertyOrdering": ["question", "options", "correct_answer"]
+                }
+            };
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: responseSchema
+                },
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const maxRetries = 3;
+            let attempt = 0;
+
+            while (attempt < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    const candidate = result.candidates?.[0];
+
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        const rawJson = candidate.content.parts[0].text;
+                        const parsedData = JSON.parse(rawJson);
+
+                        jsonOutput.value = JSON.stringify(parsedData, null, 2);
+                        renderQuestions(parsedData);
+                        resultsDiv.classList.remove('hidden');
+                        showLoading(false);
+                        return; // Success, exit loop
+                    } else {
+                        throw new Error("Respons dari model kosong atau tidak terstruktur.");
+                    }
+                } catch (error) {
+                    attempt++;
+                    if (attempt < maxRetries) {
+                        const delay = Math.pow(2, attempt) * 1000;
+                        console.log(`Percobaan ulang ${attempt}/${maxRetries} setelah ${delay / 1000} detik...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        showError(`Gagal menghasilkan soal setelah ${maxRetries} percobaan. Pesan: ${error.message}. Pastikan input Anda jelas dan relevan.`);
+                        showLoading(false);
+                        return; // Failure, exit loop
+                    }
+                }
+            }
+        }
+
+        // Initialize (optional if there were external dependencies, but good practice)
+        document.addEventListener('DOMContentLoaded', () => {
+             // Set default values for demonstration
+             document.getElementById('materiPokok').value = 'Peran Mikroorganisme dalam Teknologi Pangan';
+             document.getElementById('tujuanPembelajaran').value = 'Mengidentifikasi dan menjelaskan tiga contoh utama mikroorganisme yang digunakan dalam fermentasi makanan serta produk yang dihasilkannya.';
+        });
+
+        // Pengikatan event listener yang benar untuk tombol Generate
+        document.getElementById('generateButton').addEventListener('click', generateQuiz);
+    </script>
+</body>
+</html>
