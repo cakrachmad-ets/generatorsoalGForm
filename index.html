@@ -302,10 +302,10 @@
              // Set default values for demonstration
              document.getElementById('materiPokok').value = 'Peran Mikroorganisme dalam Teknologi Pangan';
              document.getElementById('tujuanPembelajaran').value = 'Mengidentifikasi dan menjelaskan tiga contoh utama mikroorganisme yang digunakan dalam fermentasi makanan serta produk yang dihasilkannya.';
+             
+             // Pengikatan event listener yang benar untuk tombol Generate
+             document.getElementById('generateButton').addEventListener('click', generateQuiz);
         });
-
-        // Pengikatan event listener yang benar untuk tombol Generate
-        document.getElementById('generateButton').addEventListener('click', generateQuiz);
     </script>
 </body>
 </html>
